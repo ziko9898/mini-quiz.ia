@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Quiz IA e Informatica – Risposta Multipla Veloce</title>
+    
+    <style>
+        /* CSS per una Grafica Chiara e Moderna */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .quiz-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+        h1 {
+            color: #3f51b5;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .question-box {
+            background-color: #e8eaf6;
+            border-left: 5px solid #3f51b5;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-align: left;
+        }
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+        .options-container button {
+            flex-grow: 1;
+            min-width: 45%; 
+            background-color: #4caf50;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .options-container button:hover:not(:disabled) {
+            background-color: #388e3c;
+            transform: translateY(-2px);
+        }
+        /* Stili per il feedback immediato */
+        .options-container button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .correct { 
+            background-color: #28a745 !important;
+            box-shadow: 0 0 10px #28a745; 
+        }
+        .wrong { 
+            background-color: #dc3545 !important;
+        }
+
+        #result {
+            margin-top: 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #ffcc80; 
+            color: #e65100;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <h1>Quiz di Informatica e IA (10 Domande) 🧠</h1>
+        <p>Metti alla prova le tue abilità digitali! Scegli la risposta corretta e procedi velocemente.</p>
+        
+        <div id="quiz-area">
+            <div class="question-box" id="question"></div>
+            <div class="options-container" id="options"></div>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "Domanda 1: Quale sigla rappresenta il 'cervello' che esegue i calcoli nel computer?",
+                options: ["GPU", "RAM", "CPU"],
+                a: "CPU"
+            },
+            {
+                q: "Domanda 2: Quale tecnologia permette a un programma di riconoscere oggetti o volti nelle foto?",
+                options: ["Virtual Reality (VR)", "Intelligenza Artificiale (IA)", "Cloud Computing"],
+                a: "Intelligenza Artificiale (IA)"
+            },
+            {
+                q: "Domanda 3: Quale acronimo indica il linguaggio standard per la struttura delle pagine web?",
+                options: ["CSS", "HTML", "Python"],
+                a: "HTML"
+            },
+            {
+                q: "Domanda 4: Che cos'è la 'RAM'?",
+                options: ["Un archivio permanente di file", "Una memoria temporanea veloce", "Un dispositivo di input"],
+                a: "Una memoria temporanea veloce"
+            },
+            {
+                q: "Domanda 5: Il processo che permette ai programmi di IA di migliorare automaticamente analizzando dati si chiama:",
+                options: ["Data Scraping", "Machine Learning", "Software Testing"],
+                a: "Machine Learning"
+            },
+            {
+                q: "Domanda 6: Cosa rappresenta il 'Bit'?",
+                options: ["L'unità più grande di archiviazione", "La cifra 0 o 1 nel codice binario", "Un tipo di file musicale"],
+                a: "La cifra 0 o 1 nel codice binario"
+            },
+            {
+                q: "Domanda 7: Se lavori su un file salvato online e accessibile ovunque, stai usando:",
+                options: ["L'Hard Disk locale", "Il Cloud Computing", "Il Sistema Operativo"],
+                a: "Il Cloud Computing"
+            },
+            {
+                q: "Domanda 8: L'insieme delle regole che descrive i passaggi precisi per risolvere un problema è chiamato:",
+                options: ["Protocollo", "Algoritmo", "Bug"],
+                a: "Algoritmo"
+            },
+            {
+                q: "Domanda 9: Quale di questi non è un linguaggio di programmazione?",
+                options: ["JavaScript", "Python", "Windows"],
+                a: "Windows"
+            },
+            {
+                q: "Domanda 10: Quale tecnologia si usa per creare conversazioni realistiche con un'IA (come Siri o Alexa)?",
+                options: ["Digitalizzazione", "Natural Language Processing (NLP)", "Crittografia"],
+                a: "Natural Language Processing (NLP)"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const resultElement = document.getElementById('result');
+
+        // Funzione per mostrare la domanda corrente
+        function showQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const qData = questions[currentQuestionIndex];
+                
+                // Aggiorna il testo della domanda
+                questionElement.textContent = `(${currentQuestionIndex + 1}/${questions.length}) - ${qData.q}`;
+                
+                optionsElement.innerHTML = ''; // Pulisce i vecchi pulsanti
+                
+                // Crea i pulsanti di risposta
+                qData.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    
+                    // Al click, gestisce la risposta
+                    button.onclick = (event) => checkAnswer(option, qData.a, event.target);
+                    
+                    optionsElement.appendChild(button);
+                });
+            } else {
+                showResult();
+            }
+        }
+
+        // Funzione per controllare la risposta e dare feedback
+        function checkAnswer(selectedOption, correctAnswer, button) {
+            // 1. Disabilita tutti i pulsanti per impedire più click
+            Array.from(optionsElement.children).forEach(btn => btn.disabled = true);
+            
+            // 2. Logica di controllo e feedback visivo
+            if (selectedOption === correctAnswer) {
+                score++;
+                button.classList.add('correct');
+                alert("✅ CORRETTO! Ottima risposta."); // Feedback tramite alert
+            } else {
+                button.classList.add('wrong');
+                // Trova e evidenzia la risposta corretta
+                Array.from(optionsElement.children)
+                     .find(btn => btn.textContent === correctAnswer)
+                     .classList.add('correct');
+                alert(`❌ ERRATO. La risposta giusta era: ${correctAnswer}.`); // Feedback tramite alert
+            }
+            
+            // 3. Passa immediatamente alla prossima domanda dopo il feedback
+            currentQuestionIndex++;
+            showQuestion();
+        }
+
+        // Funzione per mostrare il risultato finale con feedback personalizzato
+        function showResult() {
+            const total = questions.length;
+            let finalMessage = '';
+            
+            // Logica di feedback basata sul punteggio (su 10)
+            if (score === total) {
+                finalMessage = "👑 STRAORDINARIO! Punteggio Perfetto (10/10)! Sei un vero esperto di tecnologia! 🚀";
+            } else if (score >= 8) {
+                finalMessage = `🏆 Risultato Eccellente! Hai totalizzato ${score} su ${total}. Le tue conoscenze sono solide!`;
+            } else if (score >= 5) {
+                finalMessage = `👍 Ben fatto! Hai risposto correttamente a ${score} domande su ${total}. Sei sulla buona strada.`;
+            } else {
+                finalMessage = `🤔 Puoi fare meglio! Hai totalizzato ${score} su ${total}. Rivedi le basi e riprova!`;
+            }
+            
+            // Aggiorna e mostra il box del risultato
+            document.getElementById('quiz-area').style.display = 'none';
+            resultElement.style.display = 'block';
+            resultElement.innerHTML = `Quiz Terminato!<br>Punteggio Finale: **${score} / ${total}**<br><br>${finalMessage}`;
+        }
+
+        // Avvia il quiz
+        showQuestion();
+    </script>
+    </body>
+</html>
